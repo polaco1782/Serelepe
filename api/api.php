@@ -13,14 +13,16 @@ class Autoloader
     public static function load_plugins()
     {
         // load each plugin file
-        foreach(glob("plugins/*.php") as $filename)
+        foreach(glob("plugins/*.php") as $filename) {
             include $filename;
+        }
 
         foreach(get_declared_classes() as $classname)
         {
             // only accept classes under Plugin namespace
-            if(explode('\\', $classname)[0] != 'Plugin')
+            if(explode('\\', $classname)[0] != 'Plugin') {
                 continue;
+            }
 
             self::$plugins[$classname] = new $classname;
         }
@@ -28,8 +30,9 @@ class Autoloader
 
     public static function unload_plugin($plugin)
     {
-        if(isset(self::$plugins[$plugin]))
+        if(isset(self::$plugins[$plugin])) {
             unset(self::$plugins[$plugin]);
+        }
     }
 
     public static function dump_plugins()
@@ -41,8 +44,9 @@ class Autoloader
     {
         foreach(self::$plugins as $p)
         {
-            if($p->parse_crontab())
+            if($p->parse_crontab()) {
                 $p->run();
+            }
         }
     }
 
@@ -60,10 +64,11 @@ class PluginApi
     // calls a dynamic registered function
     public function __call($method, $args)
     {
-        if(self::$calls[$method])
+        if(self::$calls[$method]) {
             self::$calls[$method]($this->plugin, ...$args);
-        else
+        } else {
             throw new \Exception("Method not implemented: ".$method."(), make sure plugin is loaded before call().\n");
+        }
     }
 
     public function __construct($type, $crontab=null)
@@ -76,13 +81,13 @@ class PluginApi
         $conf = 'conf/'.explode('\\', $this->plugin)[1].'.json';
 
         // load existing configuration file
-        if(file_exists($conf))
-        {
+        if(file_exists($conf)) {
             $this->configs = json_decode(file_get_contents($conf));
 
             // damaged or missing content
-            if(!$this->configs)
+            if(!$this->configs) {
                 throw new \Exception("Empty or damaged configuration file {$conf} for plugin {$this->plugin}");
+            }
         }
     }
 
@@ -95,8 +100,9 @@ class PluginApi
     public function parse_crontab()
     {
         // ignore empty crontabs
-        if($this->crontab == null)
+        if($this->crontab == null) {
             return;
+        }
 
         $time = explode(' ', date('i G j n w'));
         $crontab = explode(' ', $this->crontab);
@@ -107,7 +113,8 @@ class PluginApi
 
             foreach ($v as &$v1)
             {
-                $v1 = preg_replace(['/^\*$/', '/^\d+$/', '/^(\d+)\-(\d+)$/', '/^\*\/(\d+)$/'],
+                $v1 = preg_replace(
+                    ['/^\*$/', '/^\d+$/', '/^(\d+)\-(\d+)$/', '/^\*\/(\d+)$/'],
                     ['true', $time[$k] . '===\0', '(\1<=' . $time[$k] . ' and ' . $time[$k] . '<=\2)', $time[$k] . '%\1===0'],
                     $v1
                 );

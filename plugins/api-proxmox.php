@@ -66,8 +66,9 @@ class ProxMox extends \API\PluginApi
         self::$response = json_decode(self::$response, JSON_PRETTY_PRINT)['data'];
 
         // failed to reach server, or auth failed
-        if(!self::$response)
+        if(!self::$response) {
             throw new \Exception('Failed to fetch data from ProxMox, check IP, port and credentials!');
+        }
 
         $headers = [
             'CSRFPreventionToken: '.self::$response['CSRFPreventionToken'],
@@ -81,29 +82,30 @@ class ProxMox extends \API\PluginApi
 
     public static function request($path, array $params = null, $method="GET")
     {
-        if (substr($path, 0, 1) != '/')
+        if (substr($path, 0, 1) != '/') {
             $path = '/' . $path;
+        }
 
         $api = "https://" . self::$hostname . ":" . self::$port . "/api2/json" . $path;
 
         switch ($method) {
-            case "GET":
-                curl_setopt(self::$curl, CURLOPT_URL, $api);
-                curl_setopt(self::$curl, CURLOPT_CUSTOMREQUEST, 'GET');
-                curl_setopt(self::$curl, CURLOPT_HTTPGET, true);
-                break;
-            case "PUT":
-                //return self::$Client->put($api, $params);
-                break;
-            case "POST":
-                //return self::$Client->post($api, $params);
-                break;
-            case "DELETE":
-                //self::$Client->removeHeader('Content-Length');
-                //return self::$Client->delete($api, $params);
-                break;
-            default:
-                throw new \Exception('HTTP Request method not allowed.');
+        case "GET":
+            curl_setopt(self::$curl, CURLOPT_URL, $api);
+            curl_setopt(self::$curl, CURLOPT_CUSTOMREQUEST, 'GET');
+            curl_setopt(self::$curl, CURLOPT_HTTPGET, true);
+            break;
+        case "PUT":
+            //return self::$Client->put($api, $params);
+            break;
+        case "POST":
+            //return self::$Client->post($api, $params);
+            break;
+        case "DELETE":
+            //self::$Client->removeHeader('Content-Length');
+            //return self::$Client->delete($api, $params);
+            break;
+        default:
+            throw new \Exception('HTTP Request method not allowed.');
         }
 
         return json_decode(curl_exec(self::$curl));

@@ -30,13 +30,13 @@ class Diskspace extends \API\PluginApi
             {
                 $text = $xx->name.": ".formatBytes($xx->disk)." of ".formatBytes($xx->maxdisk).": ".sprintf("%0.2f%%", ($xx->disk*100)/$xx->maxdisk);
     
-                if(($xx->disk*100)/$xx->maxdisk >= 75.00)
-                {
+                if(($xx->disk*100)/$xx->maxdisk >= 75.00) {
                     $this->ALERT("-->WARNING: $text");
                     $this->REPORT(["text" => "Warning: Disk usage exceeds 75% for ".$text]);
                 }
-                else
+                else {
                     $this->LOG($text);
+                }
             }
         }
     

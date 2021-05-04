@@ -18,9 +18,21 @@ class LoggingStdout extends \API\PluginApi
     {
         parent::__construct(LOGGING_PLUGIN);
 
-        $this->register_call('LOG', function($caller, $msg) { $this->write_stdout(GREEN.'LOG', $caller, $msg); });
-        $this->register_call('ALERT', function($caller, $msg) { $this->write_stdout(YELLOW.'ALERT', $caller, $msg); });
-        $this->register_call('REPORT', function($caller, $msg) { $this->write_stdout(RED.'REPORT', $caller, $msg); });
+        $this->register_call(
+            'LOG', function ($caller, $msg) {
+                $this->write_stdout(GREEN.'LOG', $caller, $msg); 
+            }
+        );
+        $this->register_call(
+            'ALERT', function ($caller, $msg) {
+                $this->write_stdout(YELLOW.'ALERT', $caller, $msg); 
+            }
+        );
+        $this->register_call(
+            'REPORT', function ($caller, $msg) {
+                $this->write_stdout(RED.'REPORT', $caller, $msg); 
+            }
+        );
     }
 
     public function write_stdout($type, $caller, $msg)
