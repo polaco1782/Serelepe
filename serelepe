@@ -1,0 +1,15 @@
+#!/usr/bin/env php
+<?php
+
+use \API\PluginApi;
+use \API\Proxmox;
+
+include 'api/api.php';
+
+\API\Autoloader::load_plugins();
+
+while(1)
+{
+    \API\Autoloader::run_plugins();
+    sleep(60);
+}
