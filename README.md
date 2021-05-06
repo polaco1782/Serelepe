@@ -1,4 +1,4 @@
 <p align="center">
-   <img src="https://i.imgur.com/ONjIQmz.png"/>
+   <img src="https://i.imgur.com/omeHggm.png"/>
 </p>
 <h1 align="center">Serelepe</h1>
