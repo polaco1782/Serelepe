@@ -49,6 +49,11 @@ class ProxMox extends \API\PluginApi
      */
     public static function ticket($data)
     {
+        self::$port = $data->port;
+        self::$hostname = $data->hostname;
+        self::$username = $data->username;
+        self::$password = $data->password;
+
         // build post fields
         $postdata = [
             'username' => $data->username.'@'.$data->realm,

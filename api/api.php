@@ -5,6 +5,7 @@ namespace API;
 define('API_PLUGIN', 0);
 define('CHECK_PLUGIN', 1);
 define('LOGGING_PLUGIN', 2);
+define('ALERT_PLUGIN', 3);
 
 class Autoloader
 {
@@ -14,7 +15,7 @@ class Autoloader
     {
         // load each plugin file
         foreach(glob("plugins/*.php") as $filename) {
-            include $filename;
+            include_once $filename;
         }
 
         foreach(get_declared_classes() as $classname)
@@ -49,13 +50,12 @@ class Autoloader
             }
         }
     }
-
 }
 
 class PluginApi
 {
-    private $plugin;
-    private $type;
+    public $plugin;
+    public $type;
     private $crontab;
     protected $configs;
 
@@ -64,11 +64,21 @@ class PluginApi
     // calls a dynamic registered function
     public function __call($method, $args)
     {
-        if(self::$calls[$method]) {
-            self::$calls[$method]($this->plugin, ...$args);
-        } else {
-            throw new \Exception("Method not implemented: ".$method."(), make sure plugin is loaded before call().\n");
+        $found = false;
+        foreach(self::$calls as $call)
+        {
+            // call every registered function
+            if(@$call[$method]) {
+                $call[$method]($this->plugin, ...$args);
+                $found = true;
+            }
         }
+
+        // don't trap debug calls
+        if($method == '__debug')
+            return;
+        elseif (!$found)
+            throw new \Exception("Method not implemented: ".$method."(), make sure plugin is loaded before call().\n");
     }
 
     public function __construct($type, $crontab=null)
@@ -94,7 +104,7 @@ class PluginApi
     // register a new dynamic call
     public function register_call($call, $func)
     {
-        self::$calls[$call] = $func;
+        self::$calls[][$call] = $func;
     }
 
     public function parse_crontab()
@@ -122,10 +132,11 @@ class PluginApi
 
             $v = '(' . implode(' or ', $v) . ')';
         }
-        $crontab = implode(' and ', $crontab);
 
-        $this->ALERT("Run crontab code: [{$crontab}]");
+        $code = eval('return ('.implode(' and ', $crontab).');');
 
-        return eval('return ' . $crontab . ';');
+        $this->__debug('evaluated crontab code: '.($code?'true':'false'));
+
+        return $code;
     }
 }

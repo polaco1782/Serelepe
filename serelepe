@@ -1,15 +1,31 @@
 #!/usr/bin/env php
 <?php
 
-use \API\PluginApi;
-use \API\Proxmox;
-
 include 'api/api.php';
+
+pcntl_async_signals(true);
 
 \API\Autoloader::load_plugins();
 
-while(1)
+pcntl_signal(SIGUSR1, function ($signal) {
+    print("YOLO\n");
+});
+
+$wait = 60;
+$next = 0;
+
+for(;;)
 {
+    $stamp = time();
+    do {
+        if ($stamp >= $next) {break;}
+        $diff = $next - $stamp;
+        sleep($diff);
+        $stamp = time();
+    } while ($stamp < $next);
+
     \API\Autoloader::run_plugins();
-    sleep(60);
+
+    $next = $stamp + $wait;
+    sleep($wait);
 }

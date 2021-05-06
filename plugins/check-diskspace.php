@@ -16,7 +16,7 @@ class Diskspace extends \API\PluginApi
     // constructor registers plugin type and name
     public function __construct()
     {
-        parent::__construct(CHECK_PLUGIN, '0 */12 * * *');
+        parent::__construct(CHECK_PLUGIN, '* * * * *');
     }
     
     public function run()
@@ -28,17 +28,14 @@ class Diskspace extends \API\PluginApi
             $x = Proxmox::request("/nodes/{$ll->node}/lxc");
             foreach(($x->data?:[]) as $xx)
             {
-                $text = $xx->name.": ".formatBytes($xx->disk)." of ".formatBytes($xx->maxdisk).": ".sprintf("%0.2f%%", ($xx->disk*100)/$xx->maxdisk);
+                $text = "CT: ".$xx->name.": ".formatBytes($xx->disk)." of ".formatBytes($xx->maxdisk).": ".sprintf("%0.2f%%", ($xx->disk*100)/$xx->maxdisk);
     
-                if(($xx->disk*100)/$xx->maxdisk >= 75.00) {
-                    $this->ALERT("-->WARNING: $text");
-                    $this->REPORT(["text" => "Warning: Disk usage exceeds 75% for ".$text]);
+                if(($xx->disk*100)/$xx->maxdisk >= (float)$this->configs->threshold) {
+                    $this->ALERT("Warning: Disk usage exceeds {$this->configs->threshold}% for ".$text);
                 }
-                else {
-                    $this->LOG($text);
-                }
+
+                $this->LOG($text);
             }
         }
-    
     }
 }
