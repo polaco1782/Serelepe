@@ -2,16 +2,11 @@
 <?php
 
 include 'api/api.php';
-
-pcntl_async_signals(true);
+include 'api/common.php';
 
 \API\Autoloader::load_plugins();
 
-pcntl_signal(SIGUSR1, function ($signal) {
-    print("YOLO\n");
-});
-
-$wait = 60;
+$wait = 5;
 $next = 0;
 
 for(;;)
@@ -24,7 +19,11 @@ for(;;)
         $stamp = time();
     } while ($stamp < $next);
 
+    __debug("Tick");
+
     \API\Autoloader::run_plugins();
+
+    __debug("Tock");
 
     $next = $stamp + $wait;
     sleep($wait);

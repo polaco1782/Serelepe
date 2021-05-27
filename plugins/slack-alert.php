@@ -13,16 +13,21 @@ class SlackAlert extends \API\PluginApi
     {
         parent::__construct(ALERT_PLUGIN);
 
+        if (!$this->config->hook_url) {
+            throw new \Exception('Empty slack hook_url parameter!');
+        }
+
         $this->curl = curl_init();
 
         // setup cURL parameters
-        curl_setopt($this->curl, CURLOPT_URL, $this->configs->hook_url);
+        curl_setopt($this->curl, CURLOPT_URL, $this->config->hook_url);
         curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($this->curl, CURLOPT_POST, true);
 
         $this->register_call(
-            'ALERT', function ($caller, $msg) {
-                $this->write_slack($caller, $msg); 
+            'ALERT',
+            function ($caller, $msg) {
+                $this->write_slack($caller, $msg);
             }
         );
     }
@@ -30,10 +35,10 @@ class SlackAlert extends \API\PluginApi
     function write_slack($caller, $msg)
     {
         $fmt = ['attachments' => [[
-                'color' => $this->configs->color,
-                'pretext' => $this->configs->header,
-                'author_name' => $this->configs->author,
-                'footer' => 'Alert sent from '.$caller,
+                'color' => $this->config->color,
+                'pretext' => $this->config->header,
+                'author_name' => $this->config->author,
+                'footer' => 'Alert sent from ' . $caller,
                 'text' => $msg
         ]]];
     
@@ -41,8 +46,9 @@ class SlackAlert extends \API\PluginApi
 
         $content  = curl_exec($this->curl);
 
-        if(curl_errno($this->curl)){
-            echo 'Request Error:' . curl_error($this->curl);exit;
+        if (curl_errno($this->curl)) {
+            echo 'Request Error:' . curl_error($this->curl);
+            exit;
         }
     }
 }

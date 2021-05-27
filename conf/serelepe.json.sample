@@ -1,0 +1,78 @@
+{
+    "Autoloader":
+    {
+        "fork_run": true,
+        "disabled_classes":
+        [
+            "Promethesus",
+            "SlackAlert",
+            "Ping"
+        ]
+    },
+
+    "Plugins":
+    {
+        "ProxMox":
+        {
+            "crontab": "0 */1 * * *",
+            "hostname": "",
+            "username": "",
+            "password": "",
+            "realm":    "pam",
+            "port":     8006
+        },
+        
+        "SlackAlert":
+        {
+            "hook_url": "",
+            "author": "Serelepe Monitoring",
+            "header": "Automated message",
+            "color":  "#ff0000"
+        },
+
+        "Diskspace":
+        {
+            "crontab":  "0 */12 * * *",
+            "threshold": 75
+        },
+
+        "Memory":
+        {
+            "crontab": "* * * * *",
+            "threshold": 75
+        },
+
+        "MySQL":
+        {
+            "crontab": "* * * * *",
+            "host": "",
+            "user": "",
+            "password": "",
+            "database": "",
+            "query": ""
+        },
+
+        "Ping":
+        {
+            "crontab": "* * * * *"
+        },
+
+        "Prometheus":
+        {
+            "crontab": "* * * * *"
+        },
+
+        "TCPconn":
+        {
+            "crontab": "* * * * *",
+            "timeout": 1,
+
+            "host": "google.com",
+
+            "port": [
+                80,
+                443
+            ]
+        }
+    }
+}
