@@ -4,7 +4,7 @@ use \API\PluginApi;
 
 namespace Plugin;
 
-class Diskspace extends \API\PluginApi
+class ProxMox_Diskspace extends \API\PluginApi
 {
     // constructor registers plugin type and name
     public function __construct()

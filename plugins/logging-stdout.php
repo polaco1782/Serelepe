@@ -24,6 +24,12 @@ class LoggingStdout extends \API\PluginApi
             }
         );
         $this->register_call(
+            'CRITICAL',
+            function ($caller, $msg) {
+                $this->write_stdout(RED . 'CRITICAL', $caller, $msg);
+            }
+        );
+        $this->register_call(
             'REPORT',
             function ($caller, $msg) {
                 $this->write_stdout(RED . 'REPORT', $caller, $msg);

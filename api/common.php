@@ -32,11 +32,18 @@ function __debug(...$str)
 {
     $trace = debug_backtrace()[0];
 
-    printf("%sDEBUG%s%s->> %s[%s%s%s:%s%d%s], %s\n",
-        RED, GRAY, BLUE, GRAY, CYAN,
+    printf(
+        "%sDEBUG%s%s->> %s[%s%s%s:%s%d%s], %s\n",
+        RED,
+        GRAY,
+        BLUE,
+        GRAY,
+        CYAN,
         basename($trace['file']),
-        GRAY, YELLOW,
+        GRAY,
+        YELLOW,
         $trace['line'],
         GRAY,
-        implode(' ', $str));
+        implode(' ', $str)
+    );
 }

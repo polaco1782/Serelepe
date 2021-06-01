@@ -4,7 +4,7 @@
         "fork_run": true,
         "disabled_classes":
         [
-            "Promethesus",
+            "Prometheus",
             "SlackAlert",
             "Ping"
         ]
@@ -30,16 +30,27 @@
             "color":  "#ff0000"
         },
 
-        "Diskspace":
+        "ProxMox_Diskspace":
         {
             "crontab":  "0 */12 * * *",
             "threshold": 75
         },
 
-        "Memory":
+        "ProxMox_Storage":
+        {
+            "crontab":  "0 */12 * * *",
+            "threshold": 75
+        },
+
+        "ProxMox_Memory":
         {
             "crontab": "* * * * *",
             "threshold": 75
+        },
+
+        "ProxMox_ICMP":
+        {
+            "crontab": "* * * * *"
         },
 
         "MySQL":
@@ -50,11 +61,6 @@
             "password": "",
             "database": "",
             "query": ""
-        },
-
-        "Ping":
-        {
-            "crontab": "* * * * *"
         },
 
         "Prometheus":

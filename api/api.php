@@ -2,11 +2,11 @@
 
 namespace API;
 
-define('API_PLUGIN',     (1<<0));
-define('CHECK_PLUGIN',   (1<<1));
-define('LOGGING_PLUGIN', (1<<2));
-define('ALERT_PLUGIN',   (1<<3));
-define('METRIC_PLUGIN',  (1<<4));
+define('API_PLUGIN', (1 << 0));
+define('CHECK_PLUGIN', (1 << 1));
+define('LOGGING_PLUGIN', (1 << 2));
+define('ALERT_PLUGIN', (1 << 3));
+define('METRIC_PLUGIN', (1 << 4));
 
 class Autoloader
 {
@@ -29,16 +29,23 @@ class Autoloader
         }
 
         foreach (get_declared_classes() as $class) {
+            // check if class is internal to PHP code
+            if ((new \ReflectionClass($class))->isInternal() == true) {
+                continue;
+            }
+
             // supress: explode may return only one element. Not critical.
             @list($namespace,$classname) = explode('\\', $class);
 
             // only accept classes under Plugin namespace
             if ($namespace != 'Plugin') {
+                __debug("Class {$classname} is not in Plugin namespace!");
                 continue;
             }
 
             // ignore disabled plugins
             if (in_array($classname, self::$conf->disabled_classes)) {
+                __debug("Class {$classname} was disabled.");
                 continue;
             }
 
@@ -57,8 +64,9 @@ class Autoloader
     public static function is_enabled($type)
     {
         foreach (self::$plugins as &$p) {
-            if($p->type == $type)
+            if ($p->type == $type) {
                 return true;
+            }
         }
 
         return false;
@@ -115,7 +123,7 @@ class PluginApi
         }
 
         // trap, but not crash on failed calls
-        if(!$found) {
+        if (!$found) {
             __debug("Method not implemented: " . $method . "(), make sure plugin is loaded before call().\n");
             print_r(debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS));
         }

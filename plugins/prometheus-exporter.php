@@ -5,8 +5,7 @@ use \API\PluginApi;
 namespace Plugin;
 
 // used by php server to fetch data
-if(php_sapi_name()=='cli-server')
-{
+if (php_sapi_name() == 'cli-server') {
     print("TODO\n");
     return;
 }
@@ -22,29 +21,30 @@ class Prometheus extends \API\PluginApi
             throw new \Exception('ERROR: You need to have PCNTL extension enabled, or this plugin will not work!');
         }
 
-        if(!extension_loaded('redis'))
+        if (!extension_loaded('redis')) {
             throw new \Exception('ERROR: You need to have REDIS extension enabled, or this plugin will not work!');
+        }
 
         parent::__construct(METRIC_PLUGIN);
 
         $this->register_call(
             'METRIC_STORE',
             function ($caller, $msg) {
-                self::$redis->set('prometheus_'.$msg[0], $msg[1]);
+                self::$redis->set('prometheus_' . $msg[0], $msg[1]);
             }
         );
 
         $this->register_call(
             'METRIC_ADD',
             function ($caller, $msg) {
-                self::$redis->set('prometheus_'.$msg[0], $msg[1]);
+                self::$redis->set('prometheus_' . $msg[0], $msg[1]);
             }
         );
 
         $this->register_call(
             'METRIC_INC',
             function ($caller, $msg) {
-                self::$redis->incr('prometheus_'.$msg[0]);
+                self::$redis->incr('prometheus_' . $msg[0]);
             }
         );
 
@@ -56,7 +56,6 @@ class Prometheus extends \API\PluginApi
 
     public function run()
     {
-
     }
 
     public function start_webserver()

@@ -26,7 +26,7 @@ function check_private($addr)
     return false;
 }
 
-class Ping extends \API\PluginApi
+class ProxMox_ICMP extends \API\PluginApi
 {
     // constructor registers plugin type and name
     public function __construct()

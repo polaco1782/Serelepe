@@ -27,21 +27,27 @@ class SlackAlert extends \API\PluginApi
         $this->register_call(
             'ALERT',
             function ($caller, $msg) {
-                $this->write_slack($caller, $msg);
+                $this->write_slack('ALERT', $caller, ...$msg);
+            }
+        );
+        $this->register_call(
+            'CRITICAL',
+            function ($caller, $msg) {
+                $this->write_slack('*`CRITICAL`*', $caller, ...$msg);
             }
         );
     }
 
-    function write_slack($caller, $msg)
+    function write_slack($type, $caller, $msg)
     {
         $fmt = ['attachments' => [[
                 'color' => $this->config->color,
                 'pretext' => $this->config->header,
                 'author_name' => $this->config->author,
                 'footer' => 'Alert sent from ' . $caller,
-                'text' => $msg
+                'text' => "--{$type}-- {$msg}"
         ]]];
-    
+
         curl_setopt($this->curl, CURLOPT_POSTFIELDS, json_encode($fmt));
 
         $content  = curl_exec($this->curl);
