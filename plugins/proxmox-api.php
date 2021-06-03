@@ -122,7 +122,7 @@ class ProxMox extends \API\PluginApi
 
         if(!$data)
         {
-            parent::call('LOG', "WARNING: Incorrect or no response from ProxMox host! [{$response}]");
+            parent::call('ERROR', "WARNING: Incorrect or no response from ProxMox host! [{$response}]");
             $data = new \stdClass();
         }
 

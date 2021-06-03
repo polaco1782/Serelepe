@@ -36,6 +36,12 @@ class SlackAlert extends \API\PluginApi
                 $this->write_slack('*`CRITICAL`*', $caller, ...$msg);
             }
         );
+        $this->register_call(
+            'ERROR',
+            function ($caller, $msg) {
+                $this->write_slack('ERROR', $caller, ...$msg);
+            }
+        );
     }
 
     function write_slack($type, $caller, $msg)

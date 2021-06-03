@@ -172,8 +172,13 @@ class PluginApi
 
     public function parse_crontab()
     {
+        // ignore log plugins crontab
+        if($this->type == LOGGING_PLUGIN)
+            return;
+
         // ignore empty crontabs
         if (!isset($this->config->crontab) || $this->config->crontab == null) {
+            $this->ERROR('No crontab settings found. Check configuration file or plugin will not run!');
             return;
         }
 

@@ -30,9 +30,9 @@ class LoggingStdout extends \API\PluginApi
             }
         );
         $this->register_call(
-            'REPORT',
+            'ERROR',
             function ($caller, $msg) {
-                $this->write_stdout(RED . 'REPORT', $caller, $msg);
+                $this->write_stdout(RED . 'ERROR', $caller, $msg);
             }
         );
     }
