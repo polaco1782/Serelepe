@@ -1,0 +1,19 @@
+<?php
+
+use \API\PluginApi;
+
+namespace Plugin;
+
+class Sekelton extends \API\PluginApi
+{
+    // constructor registers plugin type and name
+    public function __construct()
+    {
+        parent::__construct(CHECK_PLUGIN);
+    }
+
+    public function run()
+    {
+        
+    }
+}
