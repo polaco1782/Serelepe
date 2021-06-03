@@ -113,6 +113,19 @@ class ProxMox extends \API\PluginApi
                 throw new \Exception('HTTP Request method not allowed.');
         }
 
-        return json_decode(curl_exec(self::$curl));
+        $response = curl_exec(self::$curl);
+
+        if($response === false)
+            throw new \Exception('HTTP Request failed!');
+
+        $data = json_decode($response);
+
+        if(!$data)
+        {
+            parent::call('LOG', "WARNING: Incorrect or no response from ProxMox host! [{$response}]");
+            $data = new \stdClass();
+        }
+
+        return $data;
     }
 }

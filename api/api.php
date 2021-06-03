@@ -125,7 +125,25 @@ class PluginApi
         // trap, but not crash on failed calls
         if (!$found) {
             __debug("Method not implemented: " . $method . "(), make sure plugin is loaded before call().\n");
-            print_r(debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS));
+        }
+    }
+
+    // same as above, but for static calls
+    public static function call($method, $args)
+    {
+        $found = false;
+        $trace = debug_backtrace()[0];
+        foreach (self::$calls as $call) {
+            // supress: call to an unknown method, falls into next exception.
+            if (@$call[$method]) {
+                $call[$method]( basename($trace['file']), [$args]);
+                $found = true;
+            }
+        }
+
+        // trap, but not crash on failed calls
+        if (!$found) {
+            __debug("Method not implemented: " . $method . "(), make sure plugin is loaded before call().\n");
         }
     }
 
@@ -183,7 +201,7 @@ class PluginApi
 
         $code = eval('return (' . implode(' and ', $crontab) . ');');
 
-        __debug('evaluated crontab code: ' . ($code ? 'true' : 'false'));
+        __debug('evaluated ' . $this->plugin . ' crontab code: ' . ($code ? 'true' : 'false'));
 
         return $code;
     }

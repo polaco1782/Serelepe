@@ -27,7 +27,7 @@ class SlackAlert extends \API\PluginApi
         $this->register_call(
             'ALERT',
             function ($caller, $msg) {
-                $this->write_slack('ALERT', $caller, ...$msg);
+                $this->write_slack('*ALERT*', $caller, ...$msg);
             }
         );
         $this->register_call(

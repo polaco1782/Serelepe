@@ -6,7 +6,7 @@ include 'api/common.php';
 
 \API\Autoloader::load_plugins();
 
-$wait = 5;
+$wait = 60;
 $next = 0;
 
 for(;;)

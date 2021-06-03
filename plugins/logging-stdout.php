@@ -39,6 +39,6 @@ class LoggingStdout extends \API\PluginApi
 
     public function write_stdout($type, $caller, $msg)
     {
-        printf(BLUE . "%s %s: " . GRAY . "[" . CYAN . "%s" . GRAY . "]: %s\n", date(DATE_RFC2822), $type, $caller, ...$msg);
+        printf(BLUE . "%s %s: " . GRAY . "[" . CYAN . "%s" . GRAY . "]: %s\n", date("D, d M Y H:i:s"), $type, $caller, ...$msg);
     }
 }

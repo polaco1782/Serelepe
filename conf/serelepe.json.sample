@@ -6,7 +6,7 @@
         [
             "Prometheus",
             "SlackAlert",
-            "Ping"
+            "TCPconn"
         ]
     },
 
@@ -33,24 +33,28 @@
         "ProxMox_Diskspace":
         {
             "crontab":  "0 */12 * * *",
-            "threshold": 75
+            "threshold_alert": 75,
+            "threshold_critical": 90
         },
 
         "ProxMox_Storage":
         {
             "crontab":  "0 */12 * * *",
-            "threshold": 75
+            "threshold_alert": 75,
+            "threshold_critical": 90
         },
 
         "ProxMox_Memory":
         {
             "crontab": "* * * * *",
-            "threshold": 75
+            "threshold_alert": 75,
+            "threshold_critical": 90
         },
 
         "ProxMox_ICMP":
         {
-            "crontab": "* * * * *"
+            "crontab": "* * * * *",
+            "timeout": 1000
         },
 
         "MySQL":
