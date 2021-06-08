@@ -33,6 +33,11 @@ class MySQL extends \API\PluginApi
             throw new \Exception('ERROR: You need to have MYSQLi enabled, or this plugin will not work!');
         }
 
+        $this->METRIC_ADD('mysql_connect_miliseconds', 0);
+        $this->METRIC_ADD('mysql_query_miliseconds', 0);
+        $this->METRIC_ADD('mysql_failed_queries', 0);
+        $this->METRIC_ADD('mysql_failed_connects', 0);
+
         parent::__construct(CHECK_PLUGIN);
     }
 
@@ -41,19 +46,28 @@ class MySQL extends \API\PluginApi
         $mysqli = mysqli_init();
         $mysqli->options(MYSQLI_OPT_CONNECT_TIMEOUT, 5);
 
+        $this->measure_time(true);
+
         // try connecting to server
         if (!@$mysqli->real_connect($this->config->host, $this->config->user, $this->config->password, $this->config->database)) {
             $this->ALERT("Couln't connect to MySQL server {$this->config->host}, [" . $mysqli->error . "]");
+            $this->METRIC_INC('mysql_failed_connects');
         } else {
+
+            $this->METRIC_STORE('mysql_connect_miliseconds', $this->measure_time());
+
             // try running SQL query
             $res = $mysqli->query($this->config->query);
         
             if (!$res) {
                 $this->ALERT("Failed to execute query on {$this->config->host}, [" . $mysqli->error . "]");
+                $this->METRIC_INC('mysql_failed_queries');
             } else {
                 __debug("MySQL returned {$res->num_rows} rows from '{$this->config->query}' query");
                 $res->free_result();
             }
+
+            $this->METRIC_STORE('mysql_query_miliseconds', $this->measure_time());
         }
 
         $mysqli->close();
