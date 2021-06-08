@@ -38,10 +38,14 @@ class ProxMox extends \API\PluginApi
      */
     public function run()
     {
+        $this->METRIC_ADD("proxmox_response_miliseconds", 0);
+
         $data = $this->config;
         $data->password = self::$response['ticket'];
 
+        $this->measure_time(true);
         self::ticket($data);
+        $this->METRIC_STORE('proxmox_response_miliseconds', $this->measure_time());
     }
 
     /**
@@ -115,13 +119,13 @@ class ProxMox extends \API\PluginApi
 
         $response = curl_exec(self::$curl);
 
-        if($response === false)
+        if ($response === false) {
             throw new \Exception('HTTP Request failed!');
+        }
 
         $data = json_decode($response);
 
-        if(!$data)
-        {
+        if (!$data) {
             parent::call('ERROR', "WARNING: Incorrect or no response from ProxMox host! [{$response}]");
             $data = new \stdClass();
         }

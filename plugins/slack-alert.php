@@ -7,6 +7,7 @@ namespace Plugin;
 class SlackAlert extends \API\PluginApi
 {
     private $curl;
+    private $loglevel;
 
     // constructor registers plugin type and name
     public function __construct()
@@ -17,6 +18,9 @@ class SlackAlert extends \API\PluginApi
             throw new \Exception('Empty slack hook_url parameter!');
         }
 
+        // load active logging levels
+        $this->loglevel = explode(',', strtoupper($this->config->loglevel));
+
         $this->curl = curl_init();
 
         // setup cURL parameters
@@ -24,24 +28,30 @@ class SlackAlert extends \API\PluginApi
         curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($this->curl, CURLOPT_POST, true);
 
-        $this->register_call(
-            'ALERT',
-            function ($caller, $msg) {
-                $this->write_slack('*ALERT*', $caller, ...$msg);
-            }
-        );
-        $this->register_call(
-            'CRITICAL',
-            function ($caller, $msg) {
-                $this->write_slack('*`CRITICAL`*', $caller, ...$msg);
-            }
-        );
-        $this->register_call(
-            'ERROR',
-            function ($caller, $msg) {
-                $this->write_slack('ERROR', $caller, ...$msg);
-            }
-        );
+        if (in_array('ALERT', $this->loglevel)) {
+            $this->register_call(
+                'ALERT',
+                function ($caller, $msg) {
+                    $this->write_slack('*ALERT*', $caller, ...$msg);
+                }
+            );
+        }
+        if (in_array('CRITICAL', $this->loglevel)) {
+            $this->register_call(
+                'CRITICAL',
+                function ($caller, $msg) {
+                    $this->write_slack('*`CRITICAL`*', $caller, ...$msg);
+                }
+            );
+        }
+        if (in_array('ERROR', $this->loglevel)) {
+            $this->register_call(
+                'ERROR',
+                function ($caller, $msg) {
+                    $this->write_slack('ERROR', $caller, ...$msg);
+                }
+            );
+        }
     }
 
     function write_slack($type, $caller, $msg)

@@ -53,7 +53,6 @@ class ProxMox_Storage extends \API\PluginApi
                                 $this->LOG(sprintf("Checking %s[%s] storage: %s (%0.2f%% used)", $ll->node, $xx->storage, formatBytes(($xx->total - $xx->avail)), $local[$ll->node][$xx->storage]));
                                 break;
                         }
-
                     }
                 }
             }

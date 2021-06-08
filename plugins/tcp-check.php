@@ -15,8 +15,8 @@ class TCPconn extends \API\PluginApi
     public function run()
     {
         // initialize metrics variables
-        $this->METRIC_ADD("tcp_connect_miliseconds", 0);
-        $this->METRIC_ADD("tcp_connect_fails", 0);
+        $this->METRIC_ADD('tcp_connect_miliseconds', 0);
+        $this->METRIC_ADD('tcp_connect_fails', 0);
 
         if (is_array($this->config->host)) {
             __debug("Multiple host port test", ...$this->config->host);
@@ -26,14 +26,13 @@ class TCPconn extends \API\PluginApi
                 // supress: value may be missing
                 @list($addr,$port) = explode(':', $host);
 
-                $start = microtime(true);
+                $this->measure_time(true);
                 $connection = @fsockopen($addr, $port, $errn, $errs, $this->config->timeout); // supress: may fail to connect
-                $end = microtime(true) - $start;
+                $fmt = $this->measure_time();
 
                 if (!is_resource($connection)) {
                     $this->ALERT("TCP connection test failed for {$host}. [{$errs}]");
                 } else {
-                    $fmt = number_format($end, 4);
                     $this->LOG("Connection to {$host} sucessful, {$fmt}ms");
                     fclose($connection);
                 }
@@ -43,22 +42,21 @@ class TCPconn extends \API\PluginApi
             
             // port based loop
             foreach ($this->config->port as $port) {
-                $start = microtime(true);
+                $this->measure_time(true);
                 $connection = @fsockopen($this->config->host, $port, $errn, $errs, $this->config->timeout); // supress: may fail to connect
-                $end = microtime(true) - $start;
+                $fmt = $this->measure_time();
 
                 if (!is_resource($connection)) {
                     $this->ALERT("TCP connection test failed for {$this->config->host}:{$port}. [{$errs}]");
                 } else {
-                    $fmt = number_format($end, 4);
                     $this->LOG("Connection to {$this->config->host}:{$port} sucessful, {$fmt}ms");
                     fclose($connection);
 
-                    $this->METRIC_STORE("tcp_connect_miliseconds", $fmt);
+                    $this->METRIC_STORE('tcp_connect_miliseconds', $fmt);
                 }
             }
         } else {
-            $this->METRIC_INC("tcp_connect_fails", 1);
+            $this->METRIC_INC('tcp_connect_fails');
         }
     }
 }

@@ -106,6 +106,7 @@ class PluginApi
     public $plugin;
     public $type;
     private $crontab;
+    private $exectime;
     protected $configs;
 
     static $calls = [];
@@ -172,9 +173,10 @@ class PluginApi
 
     public function parse_crontab()
     {
-        // ignore log plugins crontab
-        if($this->type == LOGGING_PLUGIN)
+        // ignore log plugins crontab for now
+        if ($this->type == LOGGING_PLUGIN || $this->type == ALERT_PLUGIN) {
             return;
+        }
 
         // ignore empty crontabs
         if (!isset($this->config->crontab) || $this->config->crontab == null) {
@@ -209,5 +211,15 @@ class PluginApi
         __debug('evaluated ' . $this->plugin . ' crontab code: ' . ($code ? 'true' : 'false'));
 
         return $code;
+    }
+
+    public function measure_time($init=false)
+    {
+        if($init)
+            $this->exectime = microtime(true);
+        else
+        {
+            return number_format((microtime(true) - $this->exectime), 4);
+        }
     }
 }

@@ -28,6 +28,7 @@
             "author": "Serelepe Monitoring",
             "header": "Automated message",
             "color":  "#ff0000"
+            "loglevel": "alert,critical,error"
         },
 
         "ProxMox_Diskspace":
@@ -55,6 +56,11 @@
         {
             "crontab": "* * * * *",
             "timeout": 1000
+        },
+
+        "LoggingStdout":
+        {
+            "loglevel": "log,alert,critical,error"
         },
 
         "MySQL":

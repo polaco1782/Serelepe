@@ -38,7 +38,7 @@ class ProxMox_ICMP extends \API\PluginApi
     {
         $l = Proxmox::request('/nodes');
 
-        $cmd = "fping -A -a -q -r 0 -t ".$this->config->timeout;
+        $cmd = "fping -A -a -q -r 0 -t " . $this->config->timeout;
         $hosts = [];
     
         foreach ($l->data as $ll) {
