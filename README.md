@@ -14,3 +14,5 @@ It is currenlty in development phase, so expect bugs.
 ## Purpose
 
 A tool where you can write/use your/third party monitoring plugins, extending already present functions/classes.
+
+MIT License
