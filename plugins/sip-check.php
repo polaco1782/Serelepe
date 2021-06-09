@@ -117,11 +117,18 @@ class SIP extends \API\PluginApi
         $data = @socket_read($this->socket, 2048);
         if(!$data)
         {
-            $this->CRITICAL("Can't read from socket! Connectivity failure!");
+            $this->CRITICAL("Can't read from socket, no response from host, or Connectivity failure!");
             $this->METRIC_INC('sip_connect_fails');
         }
 
-        // store response time
-        $this->METRIC_STORE('sip_response_miliseconds', $this->measure_time());
+        // supress: an empty value might return
+        $data = @explode("\r\n", $data)[0];
+
+        if(preg_match('/^SIP.+200/', $data))
+        {
+            // store response time
+            $this->METRIC_STORE('sip_response_miliseconds', $this->measure_time());
+            $this->LOG("SIP response code: ".$data);
+        }
     }
 }
