@@ -65,7 +65,7 @@ class Autoloader
 
             // ignore disabled plugins
             if (in_array($classname, self::$conf->disabled_classes)) {
-                __debug("Class {$classname} was disabled.");
+                __debug("Class {$classname} is disabled.");
                 continue;
             }
 
@@ -233,13 +233,12 @@ class PluginApi
         return $code;
     }
 
-    public function measure_time($init=false)
+    public function measure_time($init = false)
     {
-        if($init)
+        if ($init) {
             $this->exectime = microtime(true);
-        else
-        {
-            return number_format((microtime(true) - $this->exectime), 4);
+        } else {
+            return round((microtime(true) - $this->exectime), 4);
         }
     }
 }

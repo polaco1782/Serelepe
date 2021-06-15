@@ -53,7 +53,6 @@ class MySQL extends \API\PluginApi
             $this->ALERT("Couln't connect to MySQL server {$this->config->host}, [" . $mysqli->error . "]");
             $this->METRIC_INC('mysql_failed_connects');
         } else {
-
             $this->METRIC_STORE('mysql_connect_miliseconds', $this->measure_time());
 
             // try running SQL query

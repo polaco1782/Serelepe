@@ -34,6 +34,14 @@ class ProxMox_CPU extends \API\PluginApi
 
     public function run()
     {
-        
+        $l = Proxmox::request('/nodes');
+
+        foreach ($l->data as $ll) {
+            $x = Proxmox::request("/nodes/{$ll->node}/lxc");
+            foreach (($x->data ?: []) as $xx) {
+                $y = Proxmox::request("/nodes/{$ll->node}/lxc/{$xx->vmid}/status/current")->data;
+                var_dump($y->name, round(($y->cpu * 100), 2));
+            }
+        }
     }
 }

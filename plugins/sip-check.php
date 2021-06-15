@@ -38,20 +38,27 @@ class SIP extends \API\PluginApi
 
     public function run()
     {
-        // initialize metrics variables
-        $this->METRIC_ADD("sip_connect_miliseconds", 0);
-        $this->METRIC_ADD("sip_response_miliseconds", 0);
-        $this->METRIC_ADD("sip_connect_fails", 0);
+        foreach($this->config->servers as $server)
+        {
+            // initialize metrics variables
+            $this->METRIC_ADD($server->name."_sip_connect_miliseconds", 0);
+            $this->METRIC_ADD($server->name."_sip_response_miliseconds", 0);
+            $this->METRIC_ADD($server->name."_sip_connect_fails", 0);
 
-        $this->connect();
-        $this->sendreq();
+            if (!$this->connect($server)) {
+                continue;
+            }
+    
+            $this->sendreq($server);
+            $this->disconnect();
+        }
     }
 
-    public function connect()
+    public function connect($server)
     {
         $this->measure_time(true);
 
-        if ($this->config->protocol == "tcp") {
+        if ($server->protocol == "tcp") {
             $this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         } else {
             $this->socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
@@ -61,20 +68,26 @@ class SIP extends \API\PluginApi
             throw new \Exception("Could not create a new socket!");
         }
 
-        // connect socket
-        $result = socket_connect($this->socket, $this->config->server_address, $this->config->server_port);
+        // connect socket, supressed warning messages
+        $result = @socket_connect($this->socket, $server->address, $server->port);
 
         if (!$result) {
-            $this->ERROR("Failed to connect SIP server: " . socket_strerror(socket_last_error($this->socket)));
+            $this->CRITICAL("[{$server->name}] Failed to connect SIP server: " . socket_strerror(socket_last_error($this->socket)));
             return false;
         }
 
         // retrieve client addr and port
         if (!socket_getsockname($this->socket, $this->cli_addr, $this->cli_port)) {
-            throw new \Exception("Could not get client socket information!");
+            throw new \Exception("[{$server->name}] Could not get client socket information!");
         }
 
-        $this->METRIC_STORE('sip_connect_miliseconds', $this->measure_time());
+        // setup socket timeouts
+        socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $this->config->timeout, 'usec' => 0]);
+        socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $this->config->timeout, 'usec' => 0]);
+        
+        $this->METRIC_STORE($server->name.'_sip_connect_miliseconds', $this->measure_time());
+
+        return true;
     }
 
     public static function gentag()
@@ -85,15 +98,15 @@ class SIP extends \API\PluginApi
         return substr($chars, 0, 6);
     }
 
-    public function sendreq()
+    public function sendreq($server)
     {
         $tag = self::gentag();
         $idtag = self::gentag();
 
-        $req[] = "OPTIONS {$this->config->sip_uri} SIP/2.0";
+        $req[] = "OPTIONS {$server->sip_uri} SIP/2.0";
         $req[] = "Via: SIP/2.0/UDP {$this->cli_addr}:{$this->cli_port};rport";
         $req[] = "From: sip:checksip@{$this->cli_addr}:{$this->cli_port};tag=$tag";
-        $req[] = "To: {$this->config->sip_uri}";
+        $req[] = "To: {$server->sip_uri}";
         $req[] = "Call-ID: $idtag@{$this->cli_addr}";
         $req[] = "CSeq: 1 OPTIONS";
         $req[] = "Contact: sip:checksip@{$this->cli_addr}:{$this->cli_port}";
@@ -107,28 +120,38 @@ class SIP extends \API\PluginApi
         $this->measure_time(true);
 
         // supress: don't print warning message
-        if(!@socket_write($this->socket, $req, strlen($req)))
-        {
-            $this->CRITICAL("Can't write to socket! Connectivity failure!");
-            $this->METRIC_INC('sip_connect_fails');
+        if (!@socket_write($this->socket, $req, strlen($req))) {
+            $this->CRITICAL("[{$server->name}] Can't write to socket! Connectivity failure!");
+            $this->METRIC_INC($server->name.'_sip_connect_fails');
+
+            return;
         }
 
         // supress: don't print warning message
         $data = @socket_read($this->socket, 2048);
-        if(!$data)
-        {
-            $this->CRITICAL("Can't read from socket, no response from host, or Connectivity failure!");
-            $this->METRIC_INC('sip_connect_fails');
+        if (!$data) {
+            $this->CRITICAL("[{$server->name}] Can't read from socket, no response from host, or Connectivity failure!");
+            $this->METRIC_INC($server->name.'_sip_connect_fails');
+
+            return;
         }
 
         // supress: an empty value might return
         $data = @explode("\r\n", $data)[0];
 
-        if(preg_match('/^SIP.+200/', $data))
-        {
+        if (preg_match('/^SIP.+200/', $data)) {
             // store response time
-            $this->METRIC_STORE('sip_response_miliseconds', $this->measure_time());
-            $this->LOG("SIP response code: ".$data);
+            $this->METRIC_STORE($server->name.'_sip_response_miliseconds', $this->measure_time());
+            $this->LOG("[{$server->name}] SIP response code: {$data}");
+        } else {
+            $this->ERROR("[{$server->name}] Wrong SIP response code: " . $data);
         }
+
+    }
+
+    public function disconnect()
+    {
+        // supress: trying to close an invalid handle
+        @socket_close($this->socket);
     }
 }
