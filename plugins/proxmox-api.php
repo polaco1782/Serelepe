@@ -26,13 +26,10 @@ namespace Plugin;
 
 class ProxMox extends \API\PluginApi
 {
-    protected static $hostname;
-    protected static $username;
-    protected static $password;
-    protected static $realm;
-    protected static $port;
     protected static $response;
     protected static $curl;
+
+    protected static $data;
 
     /**
      * Plugin class constructor.
@@ -47,8 +44,10 @@ class ProxMox extends \API\PluginApi
         // renew access ticket every hour
         parent::__construct(API_PLUGIN);
 
+        self::$data = $this->config;
+
         // request access ticket
-        self::ticket($this->config);
+        self::ticket();
     }
 
     /**
@@ -60,43 +59,63 @@ class ProxMox extends \API\PluginApi
     {
         $this->METRIC_ADD("proxmox_response_miliseconds", 0);
 
-        $data = $this->config;
-        $data->password = self::$response['ticket'];
-
         $this->measure_time(true);
-        self::ticket($data);
+
+        // request a ticket refresh
+        self::ticket(true);
+
         $this->METRIC_STORE('proxmox_response_miliseconds', $this->measure_time());
     }
 
     /**
      * Retrieve a new API ticket from ProxMox service
      */
-    public static function ticket($data)
+    public static function ticket($refresh = false)
     {
-        self::$port = $data->port;
-        self::$hostname = $data->hostname;
-        self::$username = $data->username;
-        self::$password = $data->password;
-
-        // build post fields
-        $postdata = [
-            'username' => $data->username . '@' . $data->realm,
-            'password' => $data->password
-        ];
+        if($refresh)
+        {
+            // refresh ticket using old one as password
+            $postdata = [
+                'username' => self::$data->username . '@' . self::$data->realm,
+                'password' => self::$response['ticket']
+            ];
+        }
+        else
+        {
+            // build post fields
+            $postdata = [
+                'username' => self::$data->username . '@' . self::$data->realm,
+                'password' => self::$data->password
+            ];
+        }
 
         curl_setopt(self::$curl, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt(self::$curl, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt(self::$curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt(self::$curl, CURLOPT_URL, "https://{$data->hostname}:{$data->port}/api2/json/access/ticket");
+        curl_setopt(self::$curl, CURLOPT_URL, "https://".self::$data->hostname.":".self::$data->port."/api2/json/access/ticket");
         curl_setopt(self::$curl, CURLOPT_POSTFIELDS, http_build_query($postdata, '', '&'));
         curl_setopt(self::$curl, CURLOPT_POST, true);
 
-        self::$response = curl_exec(self::$curl);
-        self::$response = json_decode(self::$response, JSON_PRETTY_PRINT)['data'];
+        $retry = 0;
+        while($retry<5)
+        {
+            self::$response = curl_exec(self::$curl);
+            __debug("Proxmox Response: ", self::$response);
+            self::$response = json_decode(self::$response, JSON_PRETTY_PRINT)['data'];
+
+            if(self::$response)
+                break;
+
+            parent::call('CRITICAL',"Retrying connection to ProxMox... {$retry}");
+
+            sleep(5);
+            $retry++;
+        }
 
         // failed to reach server, or auth failed
         if (!self::$response) {
-            throw new \Exception('Failed to fetch data from ProxMox, check IP, port and credentials!');
+            parent::call('ERROR','Failed to fetch data from ProxMox, check IP, port and credentials!');
+            return false;
         }
 
         $headers = [
@@ -111,11 +130,19 @@ class ProxMox extends \API\PluginApi
 
     public static function request($path, array $params = null, $method = "GET")
     {
+        if (!self::$response['ticket']) {
+            parent::call('ALERT','Tried call to ::request without a ticket!');
+
+            // try to issue a new ticket
+            if(!self::ticket())
+                return null;
+        }
+
         if (substr($path, 0, 1) != '/') {
             $path = '/' . $path;
         }
 
-        $api = "https://" . self::$hostname . ":" . self::$port . "/api2/json" . $path;
+        $api = "https://" . self::$data->hostname . ":" . self::$data->port . "/api2/json" . $path;
 
         switch ($method) {
             case "GET":
@@ -140,7 +167,7 @@ class ProxMox extends \API\PluginApi
         $response = curl_exec(self::$curl);
 
         if ($response === false) {
-            throw new \Exception('HTTP Request failed!');
+            parent::call('ERROR','HTTP Request failed!');
         }
 
         $data = json_decode($response);
