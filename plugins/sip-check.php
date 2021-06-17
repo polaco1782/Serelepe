@@ -114,6 +114,7 @@ class SIP extends \API\PluginApi
         $req[] = "Max-Forwards: 70";
         $req[] = "User-agent: check_sip 1.01";
         $req[] = "Accept: text/plain";
+        $req[] = "";
 
         $req = implode("\r\n", $req);
 
