@@ -95,6 +95,7 @@ class ProxMox extends \API\PluginApi
         curl_setopt(self::$curl, CURLOPT_URL, "https://".self::$data->hostname.":".self::$data->port."/api2/json/access/ticket");
         curl_setopt(self::$curl, CURLOPT_POSTFIELDS, http_build_query($postdata, '', '&'));
         curl_setopt(self::$curl, CURLOPT_POST, true);
+        curl_setopt(self::$curl, CURLOPT_HTTPGET, false);
 
         $retry = 0;
         while($retry<5)
@@ -133,6 +134,10 @@ class ProxMox extends \API\PluginApi
         if (!self::$response['ticket']) {
             parent::call('ALERT','Tried call to ::request without a ticket!');
 
+            // close active handle and try re-opening
+            curl_close(self::$curl);
+            self::$curl = curl_init();
+
             // try to issue a new ticket
             if(!self::ticket())
                 return null;
@@ -147,9 +152,10 @@ class ProxMox extends \API\PluginApi
         switch ($method) {
             case "GET":
                 curl_setopt(self::$curl, CURLOPT_URL, $api);
-                curl_setopt(self::$curl, CURLOPT_CUSTOMREQUEST, 'GET');
+                //curl_setopt(self::$curl, CURLOPT_CUSTOMREQUEST, 'GET');
+                curl_setopt(self::$curl, CURLOPT_POST, false);
                 curl_setopt(self::$curl, CURLOPT_HTTPGET, true);
-                break;
+                        break;
             case "PUT":
                 //return self::$Client->put($api, $params);
                 break;
