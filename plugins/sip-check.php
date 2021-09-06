@@ -38,12 +38,11 @@ class SIP extends \API\PluginApi
 
     public function run()
     {
-        foreach($this->config->servers as $server)
-        {
+        foreach ($this->config->servers as $server) {
             // initialize metrics variables
-            $this->METRIC_ADD($server->name."_sip_connect_miliseconds", 0);
-            $this->METRIC_ADD($server->name."_sip_response_miliseconds", 0);
-            $this->METRIC_ADD($server->name."_sip_connect_fails", 0);
+            $this->METRIC_ADD($server->name . "_sip_connect_miliseconds", 0);
+            $this->METRIC_ADD($server->name . "_sip_response_miliseconds", 0);
+            $this->METRIC_ADD($server->name . "_sip_connect_fails", 0);
 
             if (!$this->connect($server)) {
                 continue;
@@ -85,7 +84,7 @@ class SIP extends \API\PluginApi
         socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $this->config->timeout, 'usec' => 0]);
         socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $this->config->timeout, 'usec' => 0]);
         
-        $this->METRIC_STORE($server->name.'_sip_connect_miliseconds', $this->measure_time());
+        $this->METRIC_STORE($server->name . '_sip_connect_miliseconds', $this->measure_time());
 
         return true;
     }
@@ -123,7 +122,7 @@ class SIP extends \API\PluginApi
         // supress: don't print warning message
         if (!@socket_write($this->socket, $req, strlen($req))) {
             $this->CRITICAL("[{$server->name}] Can't write to socket! Connectivity failure!");
-            $this->METRIC_INC($server->name.'_sip_connect_fails');
+            $this->METRIC_INC($server->name . '_sip_connect_fails');
 
             return;
         }
@@ -132,7 +131,7 @@ class SIP extends \API\PluginApi
         $data = @socket_read($this->socket, 2048);
         if (!$data) {
             $this->CRITICAL("[{$server->name}] Can't read from socket, no response from host, or Connectivity failure!");
-            $this->METRIC_INC($server->name.'_sip_connect_fails');
+            $this->METRIC_INC($server->name . '_sip_connect_fails');
 
             return;
         }
@@ -142,12 +141,11 @@ class SIP extends \API\PluginApi
 
         if (preg_match('/^SIP.+200/', $data)) {
             // store response time
-            $this->METRIC_STORE($server->name.'_sip_response_miliseconds', $this->measure_time());
+            $this->METRIC_STORE($server->name . '_sip_response_miliseconds', $this->measure_time());
             $this->LOG("[{$server->name}] SIP response code: {$data}");
         } else {
             $this->ERROR("[{$server->name}] Wrong SIP response code: " . $data);
         }
-
     }
 
     public function disconnect()

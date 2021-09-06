@@ -26,8 +26,10 @@ namespace Plugin;
 
 // used by php server to fetch data
 if (php_sapi_name() == 'cli-server') {
-    print("TODO\n");
-    return;
+    $redis = new \Redis();
+    $redis->connect('localhost');
+
+    var_dump($redis->keys('*'));
 }
 
 class Prometheus extends \API\PluginApi
@@ -50,21 +52,21 @@ class Prometheus extends \API\PluginApi
         $this->register_call(
             'METRIC_STORE',
             function ($caller, $msg) {
-                self::$redis->set('prometheus_' . $msg[0], $msg[1]);
+                self::$redis->set('prometheus_' . preg_replace('/\s+/', '_', $msg[0]), $msg[1]);
             }
         );
 
         $this->register_call(
             'METRIC_ADD',
             function ($caller, $msg) {
-                self::$redis->set('prometheus_' . $msg[0], $msg[1]);
+                self::$redis->set('prometheus_' . preg_replace('/\s+/', '_', $msg[0]), $msg[1]);
             }
         );
 
         $this->register_call(
             'METRIC_INC',
             function ($caller, $msg) {
-                self::$redis->incr('prometheus_' . $msg[0]);
+                self::$redis->incr('prometheus_' . preg_replace('/\s+/', '_', $msg[0]));
             }
         );
 

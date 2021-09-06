@@ -33,11 +33,6 @@ class MySQL extends \API\PluginApi
             throw new \Exception('ERROR: You need to have MYSQLi enabled, or this plugin will not work!');
         }
 
-        $this->METRIC_ADD('mysql_connect_miliseconds', 0);
-        $this->METRIC_ADD('mysql_query_miliseconds', 0);
-        $this->METRIC_ADD('mysql_failed_queries', 0);
-        $this->METRIC_ADD('mysql_failed_connects', 0);
-
         parent::__construct(CHECK_PLUGIN);
     }
 
@@ -45,6 +40,11 @@ class MySQL extends \API\PluginApi
     {
         $mysqli = mysqli_init();
         $mysqli->options(MYSQLI_OPT_CONNECT_TIMEOUT, 5);
+
+        $this->METRIC_ADD('mysql_connect_miliseconds', 0);
+        $this->METRIC_ADD('mysql_query_miliseconds', 0);
+        $this->METRIC_ADD('mysql_failed_queries', 0);
+        $this->METRIC_ADD('mysql_failed_connects', 0);
 
         $this->measure_time(true);
 
@@ -63,6 +63,11 @@ class MySQL extends \API\PluginApi
                 $this->METRIC_INC('mysql_failed_queries');
             } else {
                 __debug("MySQL returned {$res->num_rows} rows from '{$this->config->query}' query");
+
+                while ($row = $res->fetch_row()) {
+                    printf("%s (%s)\n", $row[0], $row[1]);
+                }
+
                 $res->free_result();
             }
 

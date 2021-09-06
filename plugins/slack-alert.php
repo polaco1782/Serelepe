@@ -28,6 +28,7 @@ class SlackAlert extends \API\PluginApi
 {
     private $curl;
     private $loglevel;
+    private $ignored_classes;
 
     // constructor registers plugin type and name
     public function __construct()
@@ -41,12 +42,16 @@ class SlackAlert extends \API\PluginApi
         // load active logging levels
         $this->loglevel = explode(',', strtoupper($this->config->loglevel));
 
+        // load ignored classes logs
+        $this->ignored_classes = explode(',', strtoupper($this->config->ignored_classes));
+
         $this->curl = curl_init();
 
         // setup cURL parameters
         curl_setopt($this->curl, CURLOPT_URL, $this->config->hook_url);
         curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($this->curl, CURLOPT_POST, true);
+        curl_setopt($this->curl, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
 
         if (in_array('ALERT', $this->loglevel)) {
             $this->register_call(
@@ -76,6 +81,10 @@ class SlackAlert extends \API\PluginApi
 
     function write_slack($type, $caller, $msg)
     {
+        if (in_array(explode('\\', $caller)[1], $this->ignored_classes)) {
+            return;
+        }
+
         $fmt = ['attachments' => [[
                 'color' => $this->config->color,
                 'pretext' => $this->config->header,
@@ -87,7 +96,7 @@ class SlackAlert extends \API\PluginApi
         curl_setopt($this->curl, CURLOPT_POSTFIELDS, json_encode($fmt));
 
         $content  = curl_exec($this->curl);
-
+print_r($content);
         if (curl_errno($this->curl)) {
             echo 'Request Error:' . curl_error($this->curl);
             exit;
