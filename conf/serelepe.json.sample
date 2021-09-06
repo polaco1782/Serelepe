@@ -2,18 +2,14 @@
     "Autoloader":
     {
         "fork_run": true,
-        "disabled_classes":
-        [
-            "Prometheus",
-            "SlackAlert",
-            "TCPconn"
-        ]
+        "debug": true
     },
 
     "Plugins":
     {
         "ProxMox":
         {
+            "enabled": true,
             "crontab": "0 */1 * * *",
             "hostname": "",
             "username": "",
@@ -24,62 +20,119 @@
         
         "SlackAlert":
         {
+            "enabled": true,
             "hook_url": "",
+            "_hook_url": "",
             "author": "Serelepe Monitoring",
             "header": "Automated message",
-            "color":  "#ff0000"
-            "loglevel": "alert,critical,error"
+            "color":  "#ff0000",
+            "loglevel": "critical,alert",
+            "ignored_classes": ""
         },
 
         "ProxMox_Diskspace":
         {
-            "crontab":  "0 */12 * * *",
+            "enabled": false,
+            "_crontab":  "0 */12 * * *",
+            "crontab":  "* * * * *",
             "threshold_alert": 75,
             "threshold_critical": 90
         },
 
         "ProxMox_Storage":
         {
-            "crontab":  "0 */12 * * *",
+            "enabled": false,
+            "crontab":  "* * * * *",
             "threshold_alert": 75,
             "threshold_critical": 90
         },
 
         "ProxMox_Memory":
         {
-            "crontab": "* * * * *",
+            "enabled": false,
+            "crontab": "*/5 * * * *",
             "threshold_alert": 75,
             "threshold_critical": 90
         },
 
         "ProxMox_ICMP":
         {
+            "enabled": false,
             "crontab": "* * * * *",
             "timeout": 1000
         },
 
+        "ProxMox_IPAM":
+        {
+            "enabled": false,
+            "api_url": "",
+            "api_key": "",
+            "note": "This host was added/updated by Serelepe Monitoring scripts",
+            "crontab": "* * * * *",
+            "timeout": 1000
+        },
+
+        "ProxMox_StatPing":
+        {
+            "enabled": false,
+            "api_url": "",
+            "api_key": "",
+            "crontab": "* * * * *",
+            "timeout": 1000
+        },
+
+        "ProxMox_CPU":
+        {
+            "enabled": false,
+            "crontab": "* * * * *"
+        },
+
         "LoggingStdout":
         {
+            "enabled": true,
             "loglevel": "log,alert,critical,error"
         },
 
         "MySQL":
         {
+            "enabled": false,
             "crontab": "* * * * *",
             "host": "",
             "user": "",
             "password": "",
             "database": "",
-            "query": ""
+            "query": "SELECT * FROM sys.statements_with_runtimes_in_95th_percentile"
         },
 
         "Prometheus":
         {
+            "enabled": false,
             "crontab": "* * * * *"
+        },
+
+        "SSH":
+        {
+            "enabled": false,
+            "crontab": "* * * * *",
+            "host": "",
+            "port": 22,
+            "username": "",
+            "password": "",
+            "command": "df -h"
+        },
+
+        "LDAP":
+        {
+            "enabled": false,
+            "crontab": "* * * * *",
+            "host": "",
+            "bind_dn": "",
+            "bind_pwd": ""
         },
 
         "TCPconn":
         {
+            "enabled": false,
             "crontab": "* * * * *",
             "timeout": 1,
 
@@ -88,6 +141,36 @@
             "port": [
                 80,
                 443
+            ]
+        },
+
+        "NFS":
+        {
+            "enabled": false,
+            "crontab": "* * * * *"
+        },
+
+        "SIP":
+        {
+            "enabled": false,
+            "crontab": "* * * * *",
+            "timeout": 5,
+
+            "servers": [
+                {
+                    "name": "test sip server 1",
+                    "sip_uri": "",
+                    "address": "",
+                    "port": 5060,
+                    "protocol": "udp"
+                },
+                {
+                    "name": "test sip server 2",
+                    "sip_uri": "",
+                    "address": "",
+                    "port": 5060,
+                    "protocol": "udp"
+                }
             ]
         }
     }

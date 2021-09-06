@@ -37,9 +37,9 @@ class Autoloader
 
     public static function load_plugins()
     {
-        self::$conf = json_decode(file_get_contents('conf/serelepe.json'))->Autoloader;
+        self::$conf = json_decode(file_get_contents('conf/serelepe.json'));
 
-        if (!self::$conf) {
+        if (!self::$conf->Autoloader) {
             throw new \Exception("Autoloader configuration section is broken or missing!");
         }
 
@@ -63,9 +63,13 @@ class Autoloader
                 continue;
             }
 
-            // ignore disabled plugins
-            if (in_array($classname, self::$conf->disabled_classes)) {
-                __debug("Class {$classname} is disabled.");
+            // check if plugin has configuration section
+            if(isset(self::$conf->Plugins->{$classname})) {
+                if(!self::$conf->Plugins->{$classname}->enabled)
+                    continue;
+            }
+            else {
+                __debug("Plugin {$classname} has no configuration section!");
                 continue;
             }
 
@@ -101,7 +105,7 @@ class Autoloader
     {
         foreach (self::$plugins as $p) {
             // run each instance into a forked process
-            if (self::$conf->fork_run) {
+            if (self::$conf->Autoloader->fork_run) {
                 $pid = pcntl_fork();
                 if ($pid == 0) {
                     if ($p->parse_crontab()) {
